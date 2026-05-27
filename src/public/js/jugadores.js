@@ -1,10 +1,3 @@
-/* ============================================================
-   jugadores.js — Vista y lógica de gestión de jugadores
-   ------------------------------------------------------------
-   Toda la interacción (listar, crear, editar, dar de baja) se
-   realiza en el navegador con JavaScript, consumiendo la API
-   REST. PHP solo recibe las peticiones y habla con la BD.
-   ============================================================ */
 
 // Paleta para los avatares (misma idea que la versión original)
 const COLORES_JUG = ['#00e676','#1de9b6','#64ffda','#40c4ff','#80d8ff','#b2ff59','#ffd740','#ffab40','#ff6d00','#ff5252'];

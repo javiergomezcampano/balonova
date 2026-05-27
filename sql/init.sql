@@ -49,7 +49,14 @@ CREATE TABLE IF NOT EXISTS partidos (
     tipo         ENUM('Liga','Copa','Amistoso') NOT NULL DEFAULT 'Liga',
     goles_favor  TINYINT UNSIGNED DEFAULT NULL, -- NULL = partido no jugado aún
     goles_contra TINYINT UNSIGNED DEFAULT NULL,
-    resultado    ENUM('Victoria','Empate','Derrota') DEFAULT NULL, -- se calcula en PHP al guardar
+    resultado    ENUM('Victoria','Empate','Derrota') GENERATED ALWAYS AS (
+                    CASE
+                        WHEN goles_favor IS NULL THEN NULL
+                        WHEN goles_favor > goles_contra THEN 'Victoria'
+                        WHEN goles_favor = goles_contra THEN 'Empate'
+                        ELSE 'Derrota'
+                    END
+                 ) STORED,                      -- columna calculada automáticamente
     observaciones TEXT DEFAULT NULL,
     created_at   TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id_partido)
@@ -76,10 +83,10 @@ CREATE TABLE IF NOT EXISTS goles (
 -- DATOS DE EJEMPLO (para desarrollo y pruebas)
 -- ============================================================
 
--- Usuario administrador (password: admin1234 — hash bcrypt)
+-- Usuario administrador (password: admin1234 — hash bcrypt verificado)
 INSERT INTO usuarios (nombre, email, password_hash, rol) VALUES
 ('Javier Gómez', 'admin@balonova.com',
- '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin');
+ '$2b$10$jV.6ACbcH932WCvXupH60e8jggjktmiBhcm8vSLy5DKMVA3uB77bO', 'admin');
 
 -- Plantilla de jugadores
 INSERT INTO jugadores (nombre, apellidos, dorsal, posicion, estado_fisico, fecha_nac) VALUES
@@ -95,14 +102,14 @@ INSERT INTO jugadores (nombre, apellidos, dorsal, posicion, estado_fisico, fecha
 ('Iván',    'Jiménez Díaz',     26, 'Extremo',  'Disponible', '1999-01-17');
 
 -- Partidos de la temporada
-INSERT INTO partidos (rival, fecha, hora, lugar, tipo, goles_favor, goles_contra, resultado) VALUES
-('CD Valladolid',  '2026-04-05', '18:00', 'Pabellón Municipal', 'Liga',     32, 28, 'Victoria'),
-('BM Salamanca',   '2026-03-31', '19:30', 'Pabellón Heliodoro', 'Copa',     30, 30, 'Empate'),
-('BM Ávila',       '2026-03-24', '18:00', 'Pabellón Municipal', 'Liga',     35, 31, 'Victoria'),
-('CD Segovia',     '2026-03-17', '17:00', 'Pabellón Segovia',   'Liga',     29, 24, 'Victoria'),
-('Club Burgos',    '2026-03-10', '18:00', 'Pabellón Municipal', 'Amistoso', 27, 31, 'Derrota'),
-('CB Palencia',    '2026-03-03', '19:00', 'Pabellón Palencia',  'Liga',     33, 27, 'Victoria'),
-('BM Zamora',      '2026-04-12', '18:00', 'Pabellón Municipal', 'Liga',     NULL, NULL, NULL);
+INSERT INTO partidos (rival, fecha, hora, lugar, tipo, goles_favor, goles_contra) VALUES
+('CD Valladolid',  '2026-04-05', '18:00', 'Pabellón Municipal', 'Liga',     32, 28),
+('BM Salamanca',   '2026-03-31', '19:30', 'Pabellón Heliodoro', 'Copa',     30, 30),
+('BM Ávila',       '2026-03-24', '18:00', 'Pabellón Municipal', 'Liga',     35, 31),
+('CD Segovia',     '2026-03-17', '17:00', 'Pabellón Segovia',   'Liga',     29, 24),
+('Club Burgos',    '2026-03-10', '18:00', 'Pabellón Municipal', 'Amistoso', 27, 31),
+('CB Palencia',    '2026-03-03', '19:00', 'Pabellón Palencia',  'Liga',     33, 27),
+('BM Zamora',      '2026-04-12', '18:00', 'Pabellón Municipal', 'Liga',     NULL, NULL);
 
 -- Goles del partido 1 (Balonova 32 - CD Valladolid 28)
 INSERT INTO goles (id_jugador, id_partido, minuto, tipo_gol) VALUES
