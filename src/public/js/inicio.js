@@ -102,12 +102,22 @@ async function VistaInicio() {
       <div class="results-card">
         <div class="section-header">
           <div class="section-title">Últimos resultados</div>
+          <button class="ver-todos-btn" data-ir="partidos">Ver todos</button>
         </div>
         ${resultados || '<p style="color:var(--muted)">Sin resultados todavía.</p>'}
       </div>
     </div>`;
 
   // ── Acciones rápidas ──
+  // La tarjeta de "Nuevo usuario" solo se muestra a los administradores,
+  // igual que el apartado al que lleva.
+  const esAdmin = App.usuario && App.usuario.rol === 'admin';
+  const tarjetaUsuario = esAdmin ? `
+      <div class="action-card" data-ir="usuarios">
+        <div class="action-icon"><svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4zM6 10V7H4v3H1v2h3v3h2v-3h3v-2H6z"/></svg></div>
+        <div><div class="action-label">Nuevo usuario</div><div class="action-sub">Da de alta una cuenta</div></div>
+      </div>` : '';
+
   const acciones = `
     <div class="section-header"><div class="section-title">Acciones rápidas</div></div>
     <div class="quick-actions">
@@ -122,7 +132,7 @@ async function VistaInicio() {
       <div class="action-card" data-ir="stats">
         <div class="action-icon"><svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg></div>
         <div><div class="action-label">Ver estadísticas</div><div class="action-sub">Ranking y análisis</div></div>
-      </div>
+      </div>${tarjetaUsuario}
     </div>`;
 
   App.vista.innerHTML = tarjetas + dosColumnas + acciones;

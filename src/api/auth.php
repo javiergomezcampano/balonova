@@ -75,8 +75,67 @@ switch ($accion) {
             ]);
         }
 
-        // Mensaje genérico: no se revela cuál de los dos campos ha fallado
+        
         error_api('Email o contraseña incorrectos.', 401);
+        break;
+
+    // ── LISTAR USUARIOS (solo admin) ──────────────────────────
+    case 'usuarios':
+        exigirAdmin();
+        // no se duelve el hash al cliente
+        $usuarios = $db->query('
+            SELECT id_usuario, nombre, email, rol, ultimo_acceso, created_at
+            FROM usuarios
+            ORDER BY created_at ASC
+        ')->fetchAll();
+        responder($usuarios);
+        break;
+
+    // ── REGISTRAR NUEVO USUARIO (solo admin) ──────────────────
+    case 'registro':
+        if (metodo() !== 'POST') {
+            error_api('Método no permitido.', 405);
+        }
+        exigirAdmin();
+
+        $datos    = cuerpoJSON();
+        $nombre   = trim($datos['nombre']   ?? '');
+        $email    = trim($datos['email']    ?? '');
+        $password = (string)($datos['password'] ?? '');
+        $rol      = ($datos['rol'] ?? 'editor') === 'admin' ? 'admin' : 'editor';
+
+        if ($nombre === '' || $email === '' || $password === '') {
+            error_api('Por favor, rellena todos los campos.');
+        }
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            error_api('El email no tiene un formato válido.');
+        }
+        if (strlen($password) < 8) {
+            error_api('La contraseña debe tener al menos 8 caracteres.');
+        }
+
+        // La contraseña nunca se guarda en texto plano: se almacena su hash bcrypt
+        $hash = password_hash($password, PASSWORD_BCRYPT);
+
+        try {
+            $stmt = $db->prepare('
+                INSERT INTO usuarios (nombre, email, password_hash, rol)
+                VALUES (?, ?, ?, ?)
+            ');
+            $stmt->execute([$nombre, $email, $hash, $rol]);
+        } catch (PDOException $e) {
+            // El email es único: si ya existe, MySQL lanza eeror
+            if ($e->getCode() === '23000') {
+                error_api('Ya existe un usuario con ese email.', 409);
+            }
+            error_api('No se pudo registrar el usuario.', 500);
+        }
+
+        responder([
+            'ok'      => true,
+            'mensaje' => 'Usuario registrado correctamente.',
+            'id'      => $db->lastInsertId(),
+        ], 201);
         break;
 
     // ── LOGOUT ────────────────────────────────────────────────

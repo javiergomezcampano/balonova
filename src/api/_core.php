@@ -1,31 +1,17 @@
 <?php
-/**
- * api/_core.php
- * Utilidades comunes a todos los endpoints de la API.
- *
- * Cada endpoint (jugadores.php, partidos.php, etc.) incluye este fichero al
- * principio. Aquí se centraliza:
- *   - El arranque de la sesión (para el control de acceso).
- *   - La cabecera de respuesta JSON.
- *   - Las funciones de ayuda para leer la petición y enviar la respuesta.
- *   - La comprobación de que el usuario ha iniciado sesión.
- */
 
 declare(strict_types=1);
 
 require_once __DIR__ . '/../config/db.php';
 
-// Arrancar la sesión para poder comprobar el login
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Todas las respuestas de la API son JSON con codificación UTF-8
+//  respuestas de la API son JSON con UTF-8
 header('Content-Type: application/json; charset=utf-8');
 
-/**
- * Devuelve el método HTTP de la petición (GET, POST, PUT, DELETE...).
- */
 function metodo(): string
 {
     return $_SERVER['REQUEST_METHOD'];
@@ -50,8 +36,8 @@ function cuerpoJSON(): array
 /**
  * Envía una respuesta JSON con el código de estado indicado y termina.
  *
- * @param mixed $datos   Contenido a enviar (array u objeto).
- * @param int   $codigo  Código HTTP (200 por defecto).
+ * @param mixed $datos   Contenido a enviar
+ * @param int   $codigo  Código HTTP
  */
 function responder($datos, int $codigo = 200): void
 {
@@ -63,8 +49,8 @@ function responder($datos, int $codigo = 200): void
 /**
  * Envía un error en formato JSON y termina.
  *
- * @param string $mensaje  Texto del error (genérico, sin detalles técnicos).
- * @param int    $codigo   Código HTTP (400 por defecto).
+ * @param string $mensaje  Texto del error
+ * @param int    $codigo   Código HTTP 
  */
 function error_api(string $mensaje, int $codigo = 400): void
 {
@@ -72,13 +58,19 @@ function error_api(string $mensaje, int $codigo = 400): void
 }
 
 /**
- * Comprueba que el usuario ha iniciado sesión.
- * Si no, corta la ejecución con un 401 (no autorizado).
- * Protege los endpoints que modifican o exponen datos sensibles.
+  * Comprueba que el usuario ha iniciado sesion
  */
 function exigirLogin(): void
 {
     if (empty($_SESSION['usuario_id'])) {
         error_api('No autorizado. Inicia sesión.', 401);
+    }
+}
+
+function exigirAdmin(): void
+{
+    exigirLogin();
+    if (($_SESSION['usuario_rol'] ?? '') !== 'admin') {
+        error_api('No autorizado. Se requiere rol de administrador.', 403);
     }
 }

@@ -14,6 +14,7 @@ const VISTAS = {
   jugadores: { fn: () => VistaJugadores(), titulo: 'Jugadores' },
   partidos:  { fn: () => VistaPartidos(),  titulo: 'Partidos' },
   stats:     { fn: () => VistaStats(),     titulo: 'Estadísticas' },
+  usuarios:  { fn: () => VistaUsuarios(),  titulo: 'Usuarios' },
 };
 
 // Referencias a elementos del DOM reutilizadas en toda la app
@@ -21,6 +22,7 @@ const App = {
   vista:    null,   // contenedor donde se dibuja cada pantalla
   titulo:   null,   // título del topbar
   acciones: null,   // botones de acción del topbar (ej. "+ Nuevo")
+  usuario:  null,   // datos del usuario autenticado (nombre, email, rol)
 };
 
 /**
@@ -62,11 +64,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       window.location.href = 'index.html';
       return;
     }
-    // Rellenar los datos del usuario en el sidebar
+    // Guardar el usuario para que las vistas puedan adaptar su contenido al rol
     const u = sesion.usuario;
+    App.usuario = u;
+    // Rellenar los datos del usuario en el sidebar
     document.getElementById('user-name').textContent   = u.nombre;
     document.getElementById('user-role').textContent   = u.rol;
     document.getElementById('user-avatar').textContent = (u.nombre || 'U').substring(0, 2).toUpperCase();
+    // El apartado de gestión de usuarios solo se muestra a los administradores
+    if (u.rol === 'admin') {
+      document.getElementById('nav-usuarios').style.display = '';
+    }
   } catch (e) {
     window.location.href = 'index.html';
     return;

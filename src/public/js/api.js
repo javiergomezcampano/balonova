@@ -54,9 +54,11 @@ const API = {
 
   // ── Autenticación ──
   auth: {
-    login:  (email, password) => peticion(`${API_BASE}/auth.php?accion=login`, 'POST', { email, password }),
-    logout: ()                => peticion(`${API_BASE}/auth.php?accion=logout`, 'POST'),
-    sesion: ()                => peticion(`${API_BASE}/auth.php?accion=sesion`, 'GET'),
+    login:    (email, password) => peticion(`${API_BASE}/auth.php?accion=login`, 'POST', { email, password }),
+    logout:   ()                => peticion(`${API_BASE}/auth.php?accion=logout`, 'POST'),
+    sesion:   ()                => peticion(`${API_BASE}/auth.php?accion=sesion`, 'GET'),
+    registro: (datos)           => peticion(`${API_BASE}/auth.php?accion=registro`, 'POST', datos),
+    usuarios: ()                => peticion(`${API_BASE}/auth.php?accion=usuarios`, 'GET'),
   },
 
   // ── Jugadores ──
